@@ -3,11 +3,18 @@ package ru.mirea.pr12;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Scanner;
 
 public class Window extends JFrame {
+    private static JTextArea input=new JTextArea(20,30);
     IDocument carcass;
     ICreateDocument createDoc;
-    String path="C:/Users/ПК/Desktop/textfile.txt";
+    String path="src/ru/mirea/pr12/test.txt";
     private JMenu createFileMenu(ICreateDocument factory){
         createDoc=factory;
         JMenu file = new JMenu("File");
@@ -27,6 +34,7 @@ public class Window extends JFrame {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 carcass=createDoc.CreateNew(path);
+                input.setText("");
                 JOptionPane.showMessageDialog(Window.this,"Документ создан");
             }
         });
@@ -35,7 +43,23 @@ public class Window extends JFrame {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 carcass=createDoc.CreateOpen(path);
+                String s="";
+                try {
+                    FileReader fileReader =new FileReader(carcass.getPath());
+                    Scanner scan=new Scanner(fileReader);
+                    while (scan.hasNextLine()) {
+                        s = scan.nextLine();
+                        input.append(s+"\n");
+                    }
+                    fileReader.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                input.setEnabled(true);
                 JOptionPane.showMessageDialog(Window.this,"Документ открыт");
+
             }
         });
         save.addActionListener(new ActionListener()
@@ -54,6 +78,11 @@ public class Window extends JFrame {
         });
         return file;
     }
+
+    public static String getInputText(){
+        return input.getText();
+    }
+
     public Window(String type){
         super("File menu");
         ICreateDocument factory;
@@ -71,7 +100,12 @@ public class Window extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createFileMenu(factory));
         setJMenuBar(menuBar);
-        setSize(300, 200);
+        input.setEnabled(false);
+        JScrollPane inScroll=new JScrollPane(input, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JPanel card=new JPanel();
+        card.add(inScroll);
+        add(card);
+        setSize(400, 400);
         setVisible(true);
     }
 
